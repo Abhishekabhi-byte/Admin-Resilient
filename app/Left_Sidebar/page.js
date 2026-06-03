@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
+  ChevronDown,
+  ChevronRight,
   X,
   LayoutDashboard,
   Package,
@@ -14,32 +14,41 @@ import {
   Settings,
   LogOut,
   Menu,
+  Contact,
 } from "lucide-react";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
   const pathname = usePathname();
+  const [dashboardOpen, setDashboardOpen] = useState(false);
 
   // MENU ITEMS DEFINITION WITH NAMES, ICONS, AND PATHS
-  const menuItems = [
+  const solutionItems = [
     {
-      name: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/",
-    },
-    {
-      name: "Products",
+      name: "Add Products",
       icon: Package,
       path: "/AdminProduct",
     },
     {
-      name: "Enquiry",
+      name: "Product Enquiry",
       icon: MessageSquare,
       path: "/Enquiry",
     },
     {
+      name: "Contact Enquiry",
+      icon: Contact,
+      path: "/Contact_enquiry",
+    },
+  ];
+
+  const instituteItems = [
+    {
       name: "Course",
       icon: ShoppingCart,
-      path: "/Course",
+      path: "/Courses",
     },
     {
       name: "Students",
@@ -71,9 +80,15 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
     return pathname.startsWith(itemPath);
   };
 
-  // 1. DYNAMIC HEADER DETECTOR
-  const activeItem = menuItems.find((item) => isMenuItemActive(item.path)) || {
-    name: "Admin Dashboard",
+  // DYNAMIC HEADER DETECTOR
+  const allItems = [...solutionItems, ...instituteItems];
+
+  const activeItem = allItems.find((item) =>
+    isMenuItemActive(item.path)
+  ) || {
+    name: pathname === "/InstituteDashboard"
+      ? "Institute Dashboard"
+      : "Solution Dashboard",
     icon: LayoutDashboard,
   };
 
@@ -85,9 +100,8 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
 
   return (
     <>
-      {/* 2. DYNAMIC HEADER PANEL */}
+      {/* DYNAMIC HEADER PANEL */}
       <header className="fixed top-0 right-0 left-0 lg:left-[240px] h-20 bg-white border-b border-gray-200 z-30 px-4 sm:px-8 flex items-center justify-between shadow-sm">
-        
         {/* Left Side: Burger Menu (Mobile Only) + Dynamic Title */}
         <div className="flex items-center gap-4">
           <button
@@ -102,7 +116,7 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
               <HeaderIcon size={22} className="stroke-[2.5]" />
             </div>
             <h1 className="text-lg sm:text-xl font-bold tracking-tight">
-              Admin {activeItem.name}
+              {activeItem.name}
             </h1>
           </div>
         </div>
@@ -119,7 +133,7 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
       </header>
 
-      {/* 3. SIDEBAR OVERLAY BACKGROUND (MOBILE) */}
+      {/* SIDEBAR OVERLAY BACKGROUND (MOBILE) */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -127,7 +141,7 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
         />
       )}
 
-      {/* 4. LEFT NAVIGATION SIDEBAR */}
+      {/* LEFT NAVIGATION SIDEBAR */}
       <aside
         className={`fixed top-0 left-0 z-50 h-screen w-[240px] bg-gray-800 text-white p-5 sm:p-6 overflow-y-auto transform transition-all duration-300 shadow-2xl ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -152,7 +166,64 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* NAVIGATION LIST INTERFACE */}
         <ul className="space-y-2">
-          {menuItems.map((item, index) => {
+          {/* Dashboard Dropdown */}
+          <li>
+            <button
+              onClick={() => setDashboardOpen(!dashboardOpen)}
+              className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white transition"
+            >
+              <div className="flex items-center gap-3">
+                <LayoutDashboard size={20} />
+                <span>Dashboard</span>
+              </div>
+
+              {dashboardOpen ? (
+                <ChevronDown size={18} />
+              ) : (
+                <ChevronRight size={18} />
+              )}
+            </button>
+
+            {dashboardOpen && (
+              <ul className="ml-6 mt-2 space-y-2">
+                <li>
+                  <Link
+                    href="/"
+                    onClick={() => setSidebarOpen(false)}
+                    className={`block px-4 py-2 rounded-lg ${
+                      pathname === "/"
+                        ? "bg-yellow-400 text-black"
+                        : "text-gray-300 hover:bg-white/10"
+                    }`}
+                  >
+                    Solution Dashboard
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/InstituteDashboard"
+                    onClick={() => setSidebarOpen(false)}
+                    className={`block px-4 py-2 rounded-lg ${
+                      pathname === "/InstituteDashboard"
+                        ? "bg-yellow-400 text-black"
+                        : "text-gray-300 hover:bg-white/10"
+                    }`}
+                  >
+                    Institute Dashboard
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Solutions Section */}
+          <div className="mt-6 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Solutions
+          </div>
+          <div className="border-t border-gray-700 mb-3"></div>
+
+          {solutionItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = isMenuItemActive(item.path);
 
@@ -161,19 +232,42 @@ export default function Left_Sidebar({ sidebarOpen, setSidebarOpen }) {
                 <Link
                   href={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive
-                      ? "bg-yellow-400 text-black font-semibold shadow-md shadow-yellow-400/10"
+                      ? "bg-yellow-400 text-black font-semibold"
                       : "hover:bg-white/10 text-gray-300 hover:text-white"
                   }`}
                 >
-                  <Icon
-                    size={20}
-                    className={`transition-transform duration-200 ${
-                      isActive ? "scale-105" : "group-hover:scale-105"
-                    }`}
-                  />
-                  <span className="text-sm sm:text-base">{item.name}</span>
+                  <Icon size={20} />
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            );
+          })}
+
+          {/* Institute Section */}
+          <div className="mt-6 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Institute
+          </div>
+          <div className="border-t border-gray-700 mb-3"></div>
+
+          {instituteItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = isMenuItemActive(item.path);
+
+            return (
+              <li key={index}>
+                <Link
+                  href={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive
+                      ? "bg-yellow-400 text-black font-semibold"
+                      : "hover:bg-white/10 text-gray-300 hover:text-white"
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{item.name}</span>
                 </Link>
               </li>
             );
